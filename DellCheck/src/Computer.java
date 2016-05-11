@@ -3,8 +3,21 @@ import java.awt.List;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Iterator;
+
+import java.io.StringWriter;
+
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -17,10 +30,17 @@ public class Computer {
 	private String owner;
 	private String makeModel;
 	private String serviceTag;
+	private String shippingDate;
 	
 	public Computer(){}
 	
+	public String getShippingDate(){
+		return shippingDate;
+	}
 	
+	public void setShippingDate(){
+		this.shippingDate = shippingDate;
+	}
 	
 	public String getPropertyControlNumber() {
 		return propertyControlNumber;
@@ -123,6 +143,46 @@ public class Computer {
 		return computerList;
 	}
 	
+	public void sendRequest() throws Exception{
+		
+		URL url = new URL("https://api.dell.com/support/v2/assetinfo/warranty/tags.xml?svctags=4ZGZLG1&apikey=849e027f476027a394edd656eaef4842");
+		URLConnection connection = url.openConnection();
+		
+		Document doc = parseXML(connection.getInputStream());
+		NodeList descNodes = doc.getChildNodes();
+		for(int i = 0; i<descNodes.getLength(); i++){
+			System.out.println(descNodes);
+		}
+		
+		
+		
+		
+		
+		
+		System.out.println(url);
+		
+	}
+	
+	private Document parseXML(InputStream stream) throws Exception {
+		DocumentBuilderFactory objDocumentBuilderFactory = null;
+        DocumentBuilder objDocumentBuilder = null;
+        Document doc = null;
+        try
+        {
+            objDocumentBuilderFactory = DocumentBuilderFactory.newInstance();
+            objDocumentBuilder = objDocumentBuilderFactory.newDocumentBuilder();
+
+            doc = objDocumentBuilder.parse(stream);
+        }
+        catch(Exception ex)
+        {
+            throw ex;
+        }       
+
+        return doc;
+    
+	}
+
 	public String toString(){
 		String result = "";
 		result += "Owner: " + getOwner() + "\n";

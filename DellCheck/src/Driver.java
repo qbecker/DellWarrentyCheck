@@ -2,7 +2,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Driver {
-	public static void main(String args[]) throws IOException{
+	public static void main(String args[]) throws Exception{
 		String excelFilepath = "CLS Poly +4 yr.xlsx";
 		Computer computerTest = new Computer();
 		
@@ -12,6 +12,8 @@ public class Driver {
 			System.out.println(i);
 			System.out.println(testComputerlist.get(i).toString());
 		}
+		
+		testComputerlist.get(3).sendRequest();
 		
 	}
 		
