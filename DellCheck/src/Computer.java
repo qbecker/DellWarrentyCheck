@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -11,14 +12,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import java.io.StringWriter;
-
+import org.jdom2.input.DOMBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-
+import org.xml.sax.InputSource;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -31,17 +33,36 @@ public class Computer {
 	private String makeModel;
 	private String serviceTag;
 	private String shippingDate;
+	private String warrentyEndDate;
 	
 	public Computer(){}
 	
-	public String getShippingDate(){
+	
+	
+	public String getShippingDate() {
 		return shippingDate;
 	}
-	
-	public void setShippingDate(){
+
+
+
+	public void setShippingDate(String shippingDate) {
 		this.shippingDate = shippingDate;
 	}
-	
+
+
+
+	public String getWarrentyEndDate() {
+		return warrentyEndDate;
+	}
+
+
+
+	public void setWarrentyEndDate(String warrentyEndDate) {
+		this.warrentyEndDate = warrentyEndDate;
+	}
+
+
+
 	public String getPropertyControlNumber() {
 		return propertyControlNumber;
 	}
@@ -145,23 +166,31 @@ public class Computer {
 	
 	public void sendRequest() throws Exception{
 		
-		URL url = new URL("https://api.dell.com/support/v2/assetinfo/warranty/tags.xml?svctags=4ZGZLG1&apikey=849e027f476027a394edd656eaef4842");
+		URL url = new URL("https://api.dell.com/support/v2/assetinfo/warranty/tags.xml?svctags="+getServiceTag()+"&apikey=849e027f476027a394edd656eaef4842");
 		URLConnection connection = url.openConnection();
 		
 		Document doc = parseXML(connection.getInputStream());
-		NodeList descNodes = doc.getChildNodes();
-		for(int i = 0; i<descNodes.getLength(); i++){
-			System.out.println(descNodes);
+
+		String xml = buildXML(doc);
+		
+		DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		Document docTest = db.parse(new InputSource(new StringReader(xml)));
+		//System.out.println(docTest.getFirstChild().getTextContent()+" here");
+		String result = docTest.getFirstChild().getTextContent();
+		//System.out.println(result);
+		//System.out.println(url);
+		String[] elements = result.split("\\s");
+		/*int counter = 1;
+		for(String element:elements){
+			System.out.println(counter+"   " + element);
+			counter++;
+		}*/
+		
+		setShippingDate(elements[119]);
+		setWarrentyEndDate(elements[152]);
+		
 		}
-		
-		
-		
-		
-		
-		
-		System.out.println(url);
-		
-	}
+	
 	
 	private Document parseXML(InputStream stream) throws Exception {
 		DocumentBuilderFactory objDocumentBuilderFactory = null;
@@ -182,6 +211,19 @@ public class Computer {
         return doc;
     
 	}
+	
+	public String buildXML(org.w3c.dom.Document xmlDocument) throws IOException{
+		xmlDocument.getDocumentElement().normalize();
+		DOMBuilder domBuilder = new DOMBuilder();
+		org.jdom2.Document jdomDocument = domBuilder.build(xmlDocument);
+		XMLOutputter xmlOutputter = new XMLOutputter(Format.getPrettyFormat());
+		StringWriter stringWriter = new StringWriter();
+		xmlOutputter.output(jdomDocument, stringWriter);
+		String xmlString = stringWriter.toString();
+		//System.out.println(xmlString);
+		return xmlString;
+		
+	}
 
 	public String toString(){
 		String result = "";
@@ -189,6 +231,10 @@ public class Computer {
 		result += "Make/Model: " + getMakeModel() + "\n";
 		result += "Property Control Number: " + getPropertyControlNumber() + "\n";
 		result += "Service Tag:  " + getServiceTag() + "\n";
+		if(shippingDate != null && warrentyEndDate != null ){
+			result+= "Shipping Date: "+getShippingDate()+ "\n";
+			result+= "Warrenty End Date: "+getWarrentyEndDate()+ "\n";
+		}
 		return result;
 	}
 

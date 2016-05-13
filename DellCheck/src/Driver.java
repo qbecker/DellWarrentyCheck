@@ -7,9 +7,10 @@ public class Driver {
 		Computer computerTest = new Computer();
 		
 		ArrayList<Computer> testComputerlist = computerTest.readBooksFromExcelFile(excelFilepath);
-		
+		testComputerlist.remove(0);
 		for(int i = 0; i < testComputerlist.size(); i++){
 			System.out.println(i);
+			testComputerlist.get(i).sendRequest();
 			System.out.println(testComputerlist.get(i).toString());
 		}
 		
